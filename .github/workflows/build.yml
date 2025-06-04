@@ -14,7 +14,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install SDL2 for PC
-        run: sudo apt-get install libsdl2-dev -y
+        run: |
+          sudo apt-get update -y  # Add this line
+          sudo apt-get install libsdl2-dev -y
 
       # ------------------------
       # 🖥️ PC Build
