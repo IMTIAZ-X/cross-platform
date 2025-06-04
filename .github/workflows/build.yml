@@ -7,33 +7,50 @@ on:
     branches: [ main ]
 
 jobs:
-  build-web:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Emscripten
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install SDL2 for PC
+        run: sudo apt-get install libsdl2-dev -y
+
+      # ------------------------
+      # 🖥️ PC Build
+      # ------------------------
+      - name: Build PC version
+        run: |
+          mkdir -p build/pc
+          cd build/pc
+          cmake ../..
+          make
+
+      # ------------------------
+      # 🌐 Web (Emscripten) Build
+      # ------------------------
+      - name: Install and activate emsdk
         run: |
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
-          source ./emsdk_env.sh
-      - name: Build Web
+          echo "source $(pwd)/emsdk_env.sh" >> $GITHUB_ENV
+
+      - name: Build Web version
         run: |
           source emsdk/emsdk_env.sh
-          mkdir build && cd build
-          emcmake cmake ../web
+          mkdir -p build/web
+          cd build/web
+          emcmake cmake ../../web
           emmake make
 
-  build-android:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Android SDK & NDK
-        uses: android-actions/setup-android@v2
-        with:
-          ndk-version: 25.1.8937393
-      - name: Build Android
-        run: |
-          cd android
-          ./gradlew assembleDebug
+      # ------------------------
+      # 🤖 Android Build
+      # ------------------------
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
+      - name: Build Android APK
+        working-directory: android
+        run: ./gradlew assembleDebug
