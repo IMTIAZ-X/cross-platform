@@ -15,7 +15,7 @@ jobs:
 
       - name: Install SDL2 for PC
         run: |
-          sudo apt-get update -y  # Add this line
+          sudo apt-get update -y
           sudo apt-get install libsdl2-dev -y
 
       # ------------------------
@@ -37,10 +37,13 @@ jobs:
           cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
-          echo "source $(pwd)/emsdk_env.sh" >> $GITHUB_ENV
+          # REMOVED: echo "source $(pwd)/emsdk_env.sh" >> $GITHUB_ENV
+          # This line was causing the "Invalid format" error.
+          # The environment will be sourced directly in the next step that needs it.
 
       - name: Build Web version
         run: |
+          # Source emsdk_env.sh here to set up the environment for this step
           source emsdk/emsdk_env.sh
           mkdir -p build/web
           cd build/web
