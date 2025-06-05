@@ -3,19 +3,15 @@ project(WebApp C) # Specify C language for the project
 
 set(CMAKE_C_STANDARD 99)
 
-# Explicitly pass -sUSE_SDL=2 as a compile option.
-# This ensures the compiler uses the correct SDL headers provided by Emscripten,
-# preventing the "fakesdl" error.
-target_compile_options(WebApp PRIVATE "-sUSE_SDL=2")
+add_executable(WebApp main.c) # Define the WebApp target first
 
-# Find SDL2 for Emscripten. Emscripten's toolchain file should handle this,
-# and link against the correct Emscripten SDL library.
-find_package(SDL2 REQUIRED)
+# Pass -sUSE_SDL=2 as a linker option. This is the primary way
+# Emscripten enables SDL support, which correctly configures
+# headers and libraries internally for compilation and linking.
+target_link_options(WebApp PRIVATE "-sUSE_SDL=2")
 
-add_executable(WebApp main.c)
-
-# Link against the found SDL2. Emscripten's toolchain will handle the specific linker flags.
-target_link_libraries(WebApp PRIVATE SDL2::SDL2)
-
-# If you have assets to preload, you can add this line:
+# If you need to preload assets (like "--preload-file assets"), add it here
 # target_link_options(WebApp PRIVATE "--preload-file assets")
+
+# No need for target_compile_options or find_package(SDL2 REQUIRED) for Emscripten's SDL.
+# The -sUSE_SDL=2 flag handles the SDL integration directly through emcc.
