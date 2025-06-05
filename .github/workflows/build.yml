@@ -29,7 +29,7 @@ jobs:
           make
 
       - name: Upload PC Build Artifact
-        uses: actions/upload-artifact@v4 # Changed to v4
+        uses: actions/upload-artifact@v4 # Using v4 for artifact uploads
         with:
           name: pc-build
           path: build/pc/CrossPlatformApp # Ensure this path is correct for your executable
@@ -44,23 +44,7 @@ jobs:
           ./emsdk install latest
           ./emsdk activate latest
 
-      - name: Build Web version
-        run: |
-          source emsdk/emsdk_env.sh
-          mkdir -p build/web
-          cd build/web
-          emcmake cmake ../../web
-          emmake make
-
-      - name: Upload Web Build Artifacts
-        uses: actions/upload-artifact@v4 # Changed to v4
-        with:
-          name: web-build
-          path: |
-            build/web/*.js
-            build/web/*.wasm # Include .wasm if generated
-            build/web/index.html # Include your HTML if it's copied to the build directory
-
+      
       # ------------------------
       # 🤖 Android Build
       # ------------------------
@@ -72,7 +56,7 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Upload Android APK
-        uses: actions/upload-artifact@v4 # Changed to v4
+        uses: actions/upload-artifact@v4 # Using v4 for artifact uploads
         with:
           name: android-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk # This is the standard path for debug APKs
+          path: android/app/build/outputs/apk/debug/app-debug.apk # Standard path for debug APKs
