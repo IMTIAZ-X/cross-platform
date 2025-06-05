@@ -28,35 +28,57 @@ jobs:
           cmake ../..
           make
 
-      - name: Upload PC Build Artifact
-        uses: actions/upload-artifact@v4 # Using v4 for artifact uploads
-        with:
-          name: pc-build
-          path: build/pc/CrossPlatformApp # Ensure this path is correct for your executable
-
-      # ------------------------
-      # 🌐 Web (Emscripten) Build
-      # ------------------------
-      - name: Install and activate emsdk
+      - name: Build Web version
         run: |
-          git clone https://github.com/emscripten-core/emsdk.git
-          cd emsdk
-          ./emsdk install latest
-          ./emsdk activate latest
+          source emsdk/emsdk_env.sh
+          mkdir -p build/web
+          cd build/web
+          emcmake cmake ../../web
+          emmake make
 
-      
       # ------------------------
       # 🤖 Android Build
       # ------------------------
       - name: Make Gradle wrapper executable
-        run: chmod +x android/gradlew
+        # The working-directory for the 'Build Android APK' step is 'android'.
+        # So, 'gradlew' is directly accessible from that directory.
+        # We need to explicitly set the working directory for this chmod step
+        # or make the path relative to the root if not setting working-directory.
+        # It's cleaner to set working-directory for this step too.
+        working-directory: android # <--- Added this working-directory here
+        run: chmod +x gradlew      # <--- Changed path to just 'gradlew'
 
       - name: Build Android APK
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Upload Android APK
-        uses: actions/upload-artifact@v4 # Using v4 for artifact uploads
+      # ------------------------
+      # 📦 Package All Builds into a Single ZIP
+      # ------------------------
+      - name: Create Combined Artifacts ZIP
+        run: |
+          mkdir -p app-bundle/pc
+          mkdir -p app-bundle/web
+          mkdir -p app-bundle/android
+
+          echo "Copying PC build artifact..."
+          cp build/pc/CrossPlatformApp app-bundle/pc/CrossPlatformApp_PC
+
+          echo "Copying Web build artifacts..."
+          cp build/web/*.js app-bundle/web/
+          cp build/web/*.wasm app-bundle/web/ 2>/dev/null || true
+          cp build/web/index.html app-bundle/web/
+
+          echo "Copying Android APK..."
+          cp android/app/build/outputs/apk/debug/app-debug.apk app-bundle/android/CrossPlatformApp_Android.apk
+
+          echo "Creating app_build.zip..."
+          zip -r app_build.zip app-bundle
+
+          echo "ZIP created successfully: app_build.zip"
+
+      - name: Upload Combined App ZIP
+        uses: actions/upload-artifact@v4
         with:
-          name: android-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk # Standard path for debug APKs
+          name: cross-platform-app-bundle
+          path: app_build.zip
