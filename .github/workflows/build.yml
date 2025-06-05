@@ -29,7 +29,7 @@ jobs:
           make
 
       - name: Upload PC Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # Changed to v4
         with:
           name: pc-build
           path: build/pc/CrossPlatformApp # Ensure this path is correct for your executable
@@ -53,7 +53,7 @@ jobs:
           emmake make
 
       - name: Upload Web Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # Changed to v4
         with:
           name: web-build
           path: |
@@ -72,7 +72,7 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Upload Android APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # Changed to v4
         with:
           name: android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk # This is the standard path for debug APKs
